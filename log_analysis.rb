@@ -43,17 +43,23 @@ class LogFile
   end  
 end
 
+def wputs(str)
+  puts str.encode("cp866", str.encoding)
+end
+
 # print info
 if ARGV.empty?
-  puts "Программа для сравнения логов компиляции.\n\n".encode("cp866", "utf-8")
-  puts "Использование: log.rb [старый лог] [новый лог]\n\n".encode("cp866", "utf-8")
-  puts "Автор: Брагин Георгий (mail@blackfoks.com), 2011".encode("cp866", "utf-8")
+  wputs "Программа для сравнения логов компиляции.\n\n"
+  wputs "Использование: log.rb [опции] [старый лог] [новый лог]\n\n"
+  wputs "Автор: Брагин Георгий (mail@blackfoks.com), 2011"
   exit
 end
 
+wputs "\nСравниваю файлы...\n\n"
+
 # load logs
-old_log = LogFile.new(ARGV[0]);
-new_log = LogFile.new(ARGV[1]);
+old_log = LogFile.new(ARGV[-2]);
+new_log = LogFile.new(ARGV[-1]);
 
 # get list of new errors
 new_errors = []
@@ -70,14 +76,42 @@ new_log.total_errors.each do |t_err|
   end
 end
 
+wputs "Старый файл: #{old_log.filename}"
+wputs "Новый файл: #{new_log.filename}\n\n"
+wputs "Ошибок компиляции в старом файле: #{old_log.errors.count}"
+wputs "Ошибок комниляции в новом файле : #{new_log.errors.count}"
+
+d_errors = old_log.errors.count - new_log.errors.count
+if d_errors > 0
+  wputs "Устранено ошибок компиляции     : #{d_errors}"
+elsif d_errors < 0
+  wputs "Появилось ошибок компиляции     : #{d_errors}"
+else
+  wputs "Количество ошибок компиляции не извенилось"
+end
+puts
+
+wputs "Всего ошибок в старом файле: #{old_log.total_errors.count}"
+wputs "Всего ошибок в новом файле : #{new_log.total_errors.count}"
+
+dt_errors = old_log.total_errors.count - new_log.total_errors.count
+if d_errors > 0
+  wputs "Всего устранено ошибок     : #{d_errors}"
+elsif d_errors < 0
+  wputs "Всего появилось ошибок     : #{d_errors}"
+else
+  wputs "Количество ошибок не извенилось"
+end
+puts
+
 # puts list
 if !new_errors.empty?
-  puts "Новых ошибок: #{new_errors.count}\n".encode("cp866", "utf-8")
-  puts 'Новые ошибки:'.encode("cp866", "utf-8")
-  new_errors.each {|err| puts "  #{new_errors.index(err)+1}: #{err}" }
+  wputs "Появилось новых ошибок: #{new_errors.count}\n"
+  wputs 'Новые ошибки компиляции:'
+  new_errors.each {|err| wputs "  #{new_errors.index(err)+1}: #{err}" }
 end
 
 if !new_total_errors.empty?
-  puts "\nПодробный список ошибок:\n".encode("cp866", "utf-8")
-  new_total_errors.each {|t_err| puts "  #{new_total_errors.index(t_err)+1}: #{t_err}".encode('cp866', 'cp1251') }
+  wputs "\nПодробный (общий) список ошибок:\n"
+  new_total_errors.each {|t_err| wputs "  #{new_total_errors.index(t_err)+1}: #{t_err}".encode('cp866', 'cp1251') }
 end
