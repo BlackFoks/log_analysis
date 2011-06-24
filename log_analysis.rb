@@ -19,6 +19,7 @@ class LogFile
   attr_reader :errors
   attr_reader :total_errors
   attr_reader :contexts
+  attr_reader :linenums
   
   def initialize(filename)
     # prepare
@@ -27,6 +28,7 @@ class LogFile
     @contexts = {}
     context = ""
     is_context = false
+    @linenums = {}
     
     # read file & parse errors and context
     @file = File.open(@filename, 'r')
@@ -39,8 +41,10 @@ class LogFile
         
         # save error name
         @errors << err_name
-      elsif is_context && !/.*Общее количество ошибок.*/ =~ line
+        @linenums[err_name] = @file.lineno
+      elsif is_context && !(/^\s*-+\s*$/ =~ line)
         context += line
+        is_context = false
       end
     end
     @errors.uniq!
@@ -54,9 +58,9 @@ end
 
 # print help
 if ARGV.empty?
-  wputs "Программа для сравнения логов компиляции.\n\n"
-  wputs "Использование: log.rb [опции] [старый лог] [новый лог]\n\n"
-  wputs "Автор: Брагин Георгий (mail@blackfoks.com), 2011"
+  wputs "Программа для сравнения логов компиляции."
+  wputs "Автор: Брагин Георгий (mail@blackfoks.com), 2011\n\n"
+  wputs "Использование: log.rb [опции] [старый лог] [новый лог]\n"
   exit
 end
 
@@ -100,8 +104,7 @@ if !new_errors.empty?
   #list errors context
   wputs "\nКонтекст ошибок:"
   new_errors.each do |err|
-    wputs "\n======== Контекст ошибки ##{new_errors.index(err)+1} ========"
-    # wputs "#{err.encode('cp866', 'cp1251')}"
+    wputs "\n======== Контекст ошибки ##{new_errors.index(err)+1} (строка #{new_log.linenums[err]}) ========"
     wputs new_log.contexts[err].encode('cp866', 'cp1251')
   end  
  else
