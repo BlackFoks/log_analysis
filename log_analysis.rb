@@ -18,17 +18,27 @@ class LogFile
   attr_reader :filename
   attr_reader :errors
   attr_reader :total_errors
+  attr_reader :contexts
   
   def initialize(filename)
     # prepare
     @filename = filename
     @errors = []
+    @contexts = {}
+    context = ""
+    is_context = false
     
     # read file & parse errors
     @file = File.open(@filename, 'r')
     @file.each do |line|
       if /\s+\d+:\s(?<err_name>.*)$/ =~ line
-        @errors << err_name
+        @contexts[@errors.last] = context
+        context = true
+        context = ""
+        
+        @errors << err_name        
+      else
+        context += line
       end
     end
     @errors.uniq!
@@ -85,4 +95,9 @@ if !new_errors.empty?
   new_errors.each {|err| wputs "  #{new_errors.index(err)+1}: #{err}".encode('cp866', 'cp1251') }
  else
   wputs "Новых ошибок не появилось."
+end
+
+new_errors.each do |err|
+  wputs err.encode('cp866', 'cp1251')
+  wputs new_log.contexts[err].encode('cp866', 'cp1251')
 end
