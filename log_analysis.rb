@@ -34,7 +34,7 @@ class LogFile
       if /\s+\d+:\s(?<err_name>.*)$/ =~ line
         @contexts[@errors.last] = context
         context = true
-        context = ""
+        context = line
         
         @errors << err_name        
       else
@@ -69,7 +69,7 @@ new_errors = new_log.errors - old_log.errors
 
 # logs info
 wputs "Старый лог: #{old_log.filename}"
-wputs "Новый лог: #{new_log.filename}\n\n"
+wputs "Новый лог : #{new_log.filename}\n\n"
 
 # info about errors
 wputs "Ошибок в старом файле : #{old_log.errors.count}"
@@ -88,16 +88,20 @@ else
 end
 puts
 
-# puts list of new errors
+# puts lists
 if !new_errors.empty?
+  # list new errors
   wputs "Появилось новых ошибок: #{new_errors.count}\n"
   wputs "\nНовые ошибки:\n"
   new_errors.each {|err| wputs "  #{new_errors.index(err)+1}: #{err}".encode('cp866', 'cp1251') }
+  
+  #list errors context
+  wputs "\nКонтекст ошибок:"
+  new_errors.each do |err|
+    wputs "\n======== Контекст ошибки ##{new_errors.index(err)+1} ========"
+    # wputs "#{err.encode('cp866', 'cp1251')}"
+    wputs new_log.contexts[err].encode('cp866', 'cp1251')
+  end  
  else
   wputs "Новых ошибок не появилось."
-end
-
-new_errors.each do |err|
-  wputs err.encode('cp866', 'cp1251')
-  wputs new_log.contexts[err].encode('cp866', 'cp1251')
 end
