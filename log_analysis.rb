@@ -23,21 +23,15 @@ class LogFile
     # prepare
     @filename = filename
     @errors = []
-    @total_errors = []
     
     # open file
     @file = File.open(@filename, 'r')
     
     # read file
-    @file.each do |line|
-      # parse compile errors
-      if /.*\d+\/\d+\s+: \d - \d* \( (?<err_name>.*) \).*/ =~ line
+    @file.each do |line|      
+      # parse errors
+      if /\s+\d+:\s(?<err_name>.*)$/ =~ line
         @errors << err_name
-      end
-      
-      # parse itogs of compilation
-      if /\s+\d+:\s(?<t_err_name>.*)$/ =~ line
-        @total_errors << t_err_name
       end
     end
   end  
@@ -61,52 +55,30 @@ wputs "\nСравниваю файлы...\n\n"
 old_log = LogFile.new(ARGV[-2]);
 new_log = LogFile.new(ARGV[-1]);
 
-# get list of new compilation errors
+# get list of new errors
 new_errors = new_log.errors - old_log.errors
-# get list of new total errors 
-new_total_errors = new_log.total_errors - old_log.total_errors
 
 # puts info
-wputs "Старый файл: #{old_log.filename}"
-wputs "Новый файл: #{new_log.filename}\n\n"
+wputs "Старый лог: #{old_log.filename}"
+wputs "Новый лог: #{new_log.filename}\n\n"
 
-#puts info of new compilation errors
-wputs "Ошибок компиляции в старом файле: #{old_log.errors.count}"
-wputs "Ошибок комниляции в новом файле : #{new_log.errors.count}"
-# number of new compilation errors
+# puts list of new errors
+wputs "Ошибок в старом файле : #{old_log.errors.count}"
+wputs "Ошибок в новом файле  : #{new_log.errors.count}"
+# number of new errors
 d_errors = old_log.errors.count - new_log.errors.count
 if d_errors > 0
-  wputs "Устранено ошибок компиляции     : #{d_errors}"
+  wputs "Всего устранено ошибок: #{d_errors}"
 elsif d_errors < 0
-  wputs "Появилось ошибок компиляции     : #{d_errors.abs}"
+  wputs "Всего появилось ошибок: #{d_errors.abs}"
 else
-  wputs "Количество ошибок компиляции не извенилось"
+  wputs "Количество ошибок не изменилось"
 end
 puts
 
 # puts list of new total errors
-wputs "Всего ошибок в старом файле: #{old_log.total_errors.count}"
-wputs "Всего ошибок в новом файле : #{new_log.total_errors.count}"
-# number of new total errors
-dt_errors = old_log.total_errors.count - new_log.total_errors.count
-if d_errors > 0
-  wputs "Всего устранено ошибок     : #{d_errors}"
-elsif d_errors < 0
-  wputs "Всего появилось ошибок     : #{d_errors.abs}"
-else
-  wputs "Количество ошибок не извенилось"
-end
-puts
-
-# puts list of new compilation errors
 if !new_errors.empty?
   wputs "Появилось новых ошибок: #{new_errors.count}\n"
-  wputs 'Новые ошибки компиляции:'
-  new_errors.each {|err| wputs "  #{new_errors.index(err)+1}: #{err}" }
-end
-
-# puts list of new total errors
-if !new_total_errors.empty?
-  wputs "\nПодробный (общий) список ошибок:\n"
-  new_total_errors.each {|t_err| wputs "  #{new_total_errors.index(t_err)+1}: #{t_err}".encode('cp866', 'cp1251') }
+  wputs "\nНовые ошибки:\n"
+  new_errors.each {|err| wputs "  #{new_errors.index(err)+1}: #{err}".encode('cp866', 'cp1251') }
 end
