@@ -24,24 +24,23 @@ class LogFile
     @filename = filename
     @errors = []
     
-    # open file
+    # read file & parse errors
     @file = File.open(@filename, 'r')
-    
-    # read file
-    @file.each do |line|      
-      # parse errors
+    @file.each do |line|
       if /\s+\d+:\s(?<err_name>.*)$/ =~ line
         @errors << err_name
       end
     end
+    @errors.uniq!
   end  
 end
 
+# puts line into stdout with cp866 encoding (for windows only)
 def wputs(str)
   puts str.encode("cp866", str.encoding)
 end
 
-# print info
+# print help
 if ARGV.empty?
   wputs "Программа для сравнения логов компиляции.\n\n"
   wputs "Использование: log.rb [опции] [старый лог] [новый лог]\n\n"
@@ -58,15 +57,18 @@ new_log = LogFile.new(ARGV[-1]);
 # get list of new errors
 new_errors = new_log.errors - old_log.errors
 
-# puts info
+# logs info
 wputs "Старый лог: #{old_log.filename}"
 wputs "Новый лог: #{new_log.filename}\n\n"
 
-# puts list of new errors
+# info about errors
 wputs "Ошибок в старом файле : #{old_log.errors.count}"
 wputs "Ошибок в новом файле  : #{new_log.errors.count}"
+
 # number of new errors
 d_errors = old_log.errors.count - new_log.errors.count
+
+# what's happend
 if d_errors > 0
   wputs "Всего устранено ошибок: #{d_errors}"
 elsif d_errors < 0
@@ -76,7 +78,7 @@ else
 end
 puts
 
-# puts list of new total errors
+# puts list of new errors
 if !new_errors.empty?
   wputs "Появилось новых ошибок: #{new_errors.count}\n"
   wputs "\nНовые ошибки:\n"
