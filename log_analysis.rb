@@ -83,4 +83,6 @@ if !new_errors.empty?
   wputs "Появилось новых ошибок: #{new_errors.count}\n"
   wputs "\nНовые ошибки:\n"
   new_errors.each {|err| wputs "  #{new_errors.index(err)+1}: #{err}".encode('cp866', 'cp1251') }
+ else
+  wputs "Новых ошибок не появилось."
 end
