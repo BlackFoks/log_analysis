@@ -28,16 +28,18 @@ class LogFile
     context = ""
     is_context = false
     
-    # read file & parse errors
+    # read file & parse errors and context
     @file = File.open(@filename, 'r')
     @file.each do |line|
       if /\s+\d+:\s(?<err_name>.*)$/ =~ line
+        # save and update context
         @contexts[@errors.last] = context
-        context = true
+        is_context = true
         context = line
         
-        @errors << err_name        
-      else
+        # save error name
+        @errors << err_name
+      elsif is_context && !/.*Общее количество ошибок.*/ =~ line
         context += line
       end
     end
