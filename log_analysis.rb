@@ -78,7 +78,7 @@ d_errors = old_log.errors.count - new_log.errors.count
 if d_errors > 0
   wputs "Устранено ошибок компиляции     : #{d_errors}"
 elsif d_errors < 0
-  wputs "Появилось ошибок компиляции     : #{d_errors}"
+  wputs "Появилось ошибок компиляции     : #{d_errors.abs}"
 else
   wputs "Количество ошибок компиляции не извенилось"
 end
@@ -92,7 +92,7 @@ dt_errors = old_log.total_errors.count - new_log.total_errors.count
 if d_errors > 0
   wputs "Всего устранено ошибок     : #{d_errors}"
 elsif d_errors < 0
-  wputs "Всего появилось ошибок     : #{d_errors}"
+  wputs "Всего появилось ошибок     : #{d_errors.abs}"
 else
   wputs "Количество ошибок не извенилось"
 end
