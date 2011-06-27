@@ -99,7 +99,7 @@ def wputs(str)
 end
 
 # print help
-if ARGV.empty?
+if ARGV.empty? || ARGV.count < 2
   wputs "Программа для сравнения логов компиляции."
   wputs "Автор: Брагин Георгий (mail@blackfoks.com), 2011\n\n"
   wputs "Использование: log_analysis.rb [опции] [старый лог] [новый лог]\n"
@@ -112,6 +112,24 @@ if ARGV.empty?
   wputs "  * Отображение контекста новых ошибок"
   puts
   wputs "Заметка: при сохранении вывода в файл, кодировка файла будет cp866."
+  exit
+end
+
+# info about files
+if !File.exists?(ARGV[-2])
+  wputs "Не удается найти файл старого лога. Проверьте правильность пути."
+  exit
+end
+if !File.exists?(ARGV[-1])
+  wputs "Не удается найти файл нового лога. Проверьте правильность пути."
+  exit
+end
+if !File.size?(ARGV[-2])
+  wputs "Файл старого лога пуст. Укажите непустой файл."
+  exit
+end
+if !File.size?(ARGV[-1])
+  wputs "Файл нового лога пуст. Укажите непустой файл."
   exit
 end
 
