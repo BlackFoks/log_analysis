@@ -20,6 +20,7 @@ class LogFile
   attr_reader :total_errors
   attr_reader :contexts
   attr_reader :linenums
+  attr_reader :blocks_count
   
   def initialize(filename)
     # prepare
@@ -30,9 +31,11 @@ class LogFile
     is_context = false
     @linenums = {}
     
-    # read file & parse errors and context
-    @file = File.open(@filename, 'r')
-    @file.each do |line|
+    # get last block
+    block = self.last_block
+    
+    # parse errors and context in last block
+    block.each do |line|
       if /\s+\d+:\s(?<err_name>.*)$/ =~ line
         # save and update context
         @contexts[@errors.last] = context
@@ -41,21 +44,20 @@ class LogFile
         
         # save error name
         @errors << err_name
-        @linenums[err_name] = @file.lineno
+        @linenums[err_name] = -1 #@file.lineno
       elsif is_context && !(/^\s*-+\s*$/ =~ line)
         context += line
         is_context = false
       end
     end
     @errors.uniq!
-    @file.close
   end  
   
-  def count_blocks
+  def last_block
     block_started = false
     prev_block = []
     block = []
-    count = 0
+    @blocks_count = 0
   
     File.open(@filename, 'r') do |file|
       file.each do |line|
@@ -64,7 +66,7 @@ class LogFile
           if !block_started
             prev_block = block
             block = []
-            count += 1
+            @blocks_count += 1
           end
           
           block_started = !block_started       
@@ -76,7 +78,8 @@ class LogFile
       end
     end
     
-    return count
+    # return block or prev_block if block is nil
+    return block || prev_block
   end
   
 end
@@ -100,8 +103,10 @@ wputs "\nСравниваю файлы...\n\n"
 old_log = LogFile.new(ARGV[-2]);
 new_log = LogFile.new(ARGV[-1]);
 
-wputs "!!!!!!!!!!!!     #{old_log.count_blocks}"
-wputs "!!!!!!!!!!!!     #{new_log.count_blocks}"
+wputs "Количество блоков компиляции:"
+wputs "    В старом логе: #{old_log.blocks_count}"
+wputs "    В новом логе : #{new_log.blocks_count}"
+wputs "Далее будут учитываться только последние блоки компиляции\n\n"
 
 # get list of new errors
 new_errors = new_log.errors - old_log.errors
