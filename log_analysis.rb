@@ -48,7 +48,37 @@ class LogFile
       end
     end
     @errors.uniq!
+    @file.close
   end  
+  
+  def count_blocks
+    block_started = false
+    prev_block = []
+    block = []
+    count = 0
+  
+    File.open(@filename, 'r') do |file|
+      file.each do |line|
+        if /.*-{50,}.*/ =~ line
+          #save and clear block if we found new block
+          if !block_started
+            prev_block = block
+            block = []
+            count += 1
+          end
+          
+          block_started = !block_started       
+        end
+        
+        if block_started
+          block << line
+        end        
+      end
+    end
+    
+    return count
+  end
+  
 end
 
 # puts line into stdout with cp866 encoding (for windows only)
@@ -69,6 +99,9 @@ wputs "\nСравниваю файлы...\n\n"
 # load logs
 old_log = LogFile.new(ARGV[-2]);
 new_log = LogFile.new(ARGV[-1]);
+
+wputs "!!!!!!!!!!!!     #{old_log.count_blocks}"
+wputs "!!!!!!!!!!!!     #{new_log.count_blocks}"
 
 # get list of new errors
 new_errors = new_log.errors - old_log.errors
