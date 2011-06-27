@@ -30,6 +30,7 @@ class LogFile
     context = ""
     is_context = false
     @linenums = {}
+    @block_start_lineno = 0
     
     # get last block
     block = self.last_block
@@ -44,7 +45,7 @@ class LogFile
         
         # save error name
         @errors << err_name
-        @linenums[err_name] = -1 #@file.lineno
+        @linenums[err_name] = block.index(line) + @block_start_lineno
       elsif is_context && !(/^\s*-+\s*$/ =~ line)
         context += line
         is_context = false
@@ -67,6 +68,7 @@ class LogFile
             prev_block = block
             block = []
             @blocks_count += 1
+            @block_start_lineno = file.lineno
           end
           
           block_started = !block_started       
@@ -103,17 +105,17 @@ wputs "\nСравниваю файлы...\n\n"
 old_log = LogFile.new(ARGV[-2]);
 new_log = LogFile.new(ARGV[-1]);
 
-wputs "Количество блоков компиляции:"
-wputs "    В старом логе: #{old_log.blocks_count}"
-wputs "    В новом логе : #{new_log.blocks_count}"
-wputs "Далее будут учитываться только последние блоки компиляции\n\n"
-
 # get list of new errors
 new_errors = new_log.errors - old_log.errors
 
 # logs info
 wputs "Старый лог: #{old_log.filename}"
 wputs "Новый лог : #{new_log.filename}\n\n"
+
+wputs "Количество блоков компиляции:"
+wputs "    В старом логе: #{old_log.blocks_count}"
+wputs "    В новом логе : #{new_log.blocks_count}"
+wputs "Далее будут учитываться только последние блоки компиляции\n\n"
 
 # info about errors
 wputs "Ошибок в старом файле : #{old_log.errors.count}"
