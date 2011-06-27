@@ -23,13 +23,19 @@ class LogFile
   attr_reader :blocks_count
   
   def initialize(filename)
-    # prepare
+    # log file name
     @filename = filename
+    # list of log errors
     @errors = []
+    # errors contexts
     @contexts = {}
+    # context of current error
     context = ""
+    # whether we now on error context
     is_context = false
+    # list of error line numbers
     @linenums = {}
+    # last block starts at these line
     @block_start_lineno = 0
     
     # get last block
@@ -54,6 +60,7 @@ class LogFile
     @errors.uniq!
   end  
   
+  # gets last block
   def last_block
     block_started = false
     prev_block = []
@@ -121,6 +128,7 @@ new_errors = new_log.errors - old_log.errors
 wputs "Старый лог: #{old_log.filename}"
 wputs "Новый лог : #{new_log.filename}\n\n"
 
+# info about blocks
 wputs "Количество блоков компиляции:"
 wputs "    В старом логе: #{old_log.blocks_count}"
 wputs "    В новом логе : #{new_log.blocks_count}"
